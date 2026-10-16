@@ -1,0 +1,6 @@
+{
+  "name": "BDUCKY",
+  "description": "Bluetooth HID keyboard & mouse emulator and productivity macro automation companion made by Sadat.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
