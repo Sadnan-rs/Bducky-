@@ -336,70 +336,70 @@ fun ConnTab(
                             )
                         }
 
-                        Spacer(modifier = Modifier.height(12.dp))
+                        Spacer(modifier = Modifier.height(10.dp))
 
                         Text(
-                            text = "Registers the Bluetooth Human Interface Device descriptor, allowing your phone/tablet to send keyboard strokes and mouse inputs.",
+                            text = "Emulates a physical Bluetooth Keyboard and Mouse using standard Android Bluetooth HID. Any paired device will treat your tablet/phone as a hardware input companion.",
                             fontSize = 12.sp,
                             color = TextSlate,
                             lineHeight = 16.sp
                         )
+                    }
+                }
+            }
 
-                        Spacer(modifier = Modifier.height(14.dp))
+            // QUICK START GUIDE
+            item {
+                Card(
+                    colors = CardDefaults.cardColors(containerColor = DarkCard),
+                    elevation = CardDefaults.cardElevation(defaultElevation = 2.dp),
+                    shape = RoundedCornerShape(16.dp),
+                    border = BorderStroke(1.dp, DarkBorder),
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Column(modifier = Modifier.padding(16.dp)) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Icon(
+                                imageVector = Icons.Default.CheckCircle,
+                                contentDescription = null,
+                                tint = CyanNeon,
+                                modifier = Modifier.size(18.dp)
+                            )
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text(
+                                text = "QUICK START GUIDE",
+                                fontSize = 13.5.sp,
+                                fontWeight = FontWeight.Black,
+                                letterSpacing = 1.sp,
+                                color = TextWhite
+                            )
+                        }
 
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.spacedBy(10.dp)
-                        ) {
-                            Button(
-                                onClick = onRegisterHid,
-                                enabled = !state.isRegistered,
-                                colors = ButtonDefaults.buttonColors(
-                                    containerColor = CyanNeon,
-                                    contentColor = DarkBg,
-                                    disabledContainerColor = Color(0xFF1E293B),
-                                    disabledContentColor = Color(0xFF64748B)
-                                ),
-                                shape = RoundedCornerShape(12.dp),
-                                modifier = Modifier
-                                    .weight(1f)
-                                    .height(44.dp)
-                                    .testTag("btn_register_hid")
-                            ) {
-                                Icon(
-                                    imageVector = Icons.Default.CheckCircle,
-                                    contentDescription = null,
-                                    modifier = Modifier.size(16.dp)
-                                )
-                                Spacer(modifier = Modifier.width(6.dp))
-                                Text(
-                                    text = "REGISTER",
-                                    fontWeight = FontWeight.Black,
-                                    fontSize = 12.5.sp,
-                                    letterSpacing = 1.sp
-                                )
-                            }
+                        Spacer(modifier = Modifier.height(12.dp))
 
-                            OutlinedButton(
-                                onClick = onUnregisterHid,
-                                enabled = state.isRegistered,
-                                border = BorderStroke(1.2.dp, if (state.isRegistered) StatusRed else Color(0xFF1E293B)),
-                                colors = ButtonDefaults.outlinedButtonColors(
-                                    contentColor = StatusRed,
-                                    disabledContentColor = Color(0xFF64748B)
-                                ),
-                                shape = RoundedCornerShape(12.dp),
-                                modifier = Modifier
-                                    .weight(1f)
-                                    .height(44.dp)
-                                    .testTag("btn_unregister_hid")
-                            ) {
-                                Text(
-                                    text = "UNREGISTER",
-                                    fontWeight = FontWeight.Bold,
-                                    fontSize = 12.5.sp,
-                                    letterSpacing = 1.sp
-                                )
+                        val steps = listOf(
+                            "1. Pair Device" to "Go to Android Bluetooth Settings and pair your target host (Infinix Hot 60i, PC, Mac).",
+                            "2. Keep HID Active" to "Ensure the HID Service switch above is ON.",
+                            "3. Connect to Host" to "Tap 'Connect' next to your paired device below and wait for handshake confirmation.",
+                            "4. Start Typing & Control" to "Switch to the INPUT or MACROS tab to send live keystrokes, mouse moves, and scripts!"
+                        )
+
+                        Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                            steps.forEach { (title, desc) ->
+                                Row(verticalAlignment = Alignment.Top) {
+                                    Box(
+                                        modifier = Modifier
+                                            .size(6.dp)
+                                            .padding(top = 5.dp)
+                                            .clip(CircleShape)
+                                            .background(CyanNeon)
+                                    )
+                                    Spacer(modifier = Modifier.width(8.dp))
+                                    Column {
+                                        Text(text = title, fontSize = 12.sp, fontWeight = FontWeight.Bold, color = TextWhite)
+                                        Text(text = desc, fontSize = 11.sp, color = TextSlate, lineHeight = 15.sp)
+                                    }
+                                }
                             }
                         }
                     }
@@ -653,6 +653,20 @@ private fun DeviceCardItem(
                                     modifier = Modifier.padding(horizontal = 5.dp, vertical = 1.dp)
                                 )
                             }
+                        } else if (device.isConnecting) {
+                            Spacer(modifier = Modifier.width(6.dp))
+                            Surface(
+                                shape = RoundedCornerShape(4.dp),
+                                color = Color(0xFF451A03)
+                            ) {
+                                Text(
+                                    text = "CONNECTING...",
+                                    fontSize = 9.sp,
+                                    fontWeight = FontWeight.ExtraBold,
+                                    color = StatusAmber,
+                                    modifier = Modifier.padding(horizontal = 5.dp, vertical = 1.dp)
+                                )
+                            }
                         }
                     }
 
@@ -680,6 +694,31 @@ private fun DeviceCardItem(
                         fontSize = 11.5.sp,
                         color = StatusRed,
                         fontWeight = FontWeight.SemiBold
+                    )
+                }
+            } else if (device.isConnecting) {
+                Button(
+                    onClick = { },
+                    enabled = false,
+                    colors = ButtonDefaults.buttonColors(
+                        disabledContainerColor = Color(0xFF162A48),
+                        disabledContentColor = CyanNeon
+                    ),
+                    shape = RoundedCornerShape(10.dp),
+                    contentPadding = PaddingValues(horizontal = 10.dp, vertical = 4.dp),
+                    modifier = Modifier.height(34.dp)
+                ) {
+                    CircularProgressIndicator(
+                        modifier = Modifier.size(13.dp),
+                        strokeWidth = 2.dp,
+                        color = CyanNeon
+                    )
+                    Spacer(modifier = Modifier.width(5.dp))
+                    Text(
+                        text = "Connecting...",
+                        fontSize = 11.sp,
+                        color = CyanNeon,
+                        fontWeight = FontWeight.Bold
                     )
                 }
             } else {

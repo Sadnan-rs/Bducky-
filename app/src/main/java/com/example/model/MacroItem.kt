@@ -31,6 +31,7 @@ data class BluetoothDeviceItem(
     val deviceType: String, // "Windows PC", "MacBook", "Android", "Linux"
     val isPaired: Boolean,
     val isConnected: Boolean,
+    val isConnecting: Boolean = false,
     val signalStrength: Int = -60 // dBm
 )
 

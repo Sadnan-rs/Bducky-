@@ -18,6 +18,7 @@ class BduckyHidManager(private val context: Context) {
 
     interface Callback {
         fun onServiceRegistered(registered: Boolean)
+        fun onDeviceConnecting(device: BluetoothDevice?)
         fun onDeviceConnected(device: BluetoothDevice)
         fun onDeviceDisconnected(device: BluetoothDevice?)
         fun onLog(message: String)
@@ -125,6 +126,10 @@ class BduckyHidManager(private val context: Context) {
 
                 override fun onConnectionStateChanged(device: BluetoothDevice?, state: Int) {
                     when (state) {
+                        BluetoothProfile.STATE_CONNECTING -> {
+                            callback?.onDeviceConnecting(device)
+                            callback?.onLog("[HID] Handshake in progress with ${device?.name ?: device?.address}...")
+                        }
                         BluetoothProfile.STATE_CONNECTED -> {
                             device?.let {
                                 connectedDevice = it

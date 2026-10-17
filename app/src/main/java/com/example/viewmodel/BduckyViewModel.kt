@@ -118,12 +118,34 @@ class BduckyViewModel : ViewModel() {
                         }
                     }
 
+                    override fun onDeviceConnecting(device: BluetoothDevice?) {
+                        val name = try { device?.name ?: device?.address ?: "Target Host" } catch (_: SecurityException) { "Target Host" }
+                        _uiState.update { state ->
+                            val updatedDevices = state.pairedDevices.map {
+                                it.copy(
+                                    isConnecting = it.address.equals(device?.address, ignoreCase = true),
+                                    isConnected = false
+                                )
+                            }
+                            state.copy(
+                                activeDeviceId = device?.address,
+                                targetName = name,
+                                status = "CONNECTING...",
+                                pairedDevices = updatedDevices,
+                                executionLogs = (state.executionLogs + "[LINK] Handshake in progress with $name...").takeLast(60)
+                            )
+                        }
+                    }
+
                     @SuppressLint("MissingPermission")
                     override fun onDeviceConnected(device: BluetoothDevice) {
                         val name = try { device.name ?: device.address } catch (_: SecurityException) { device.address }
                         _uiState.update { state ->
                             val updatedDevices = state.pairedDevices.map {
-                                it.copy(isConnected = it.address.equals(device.address, ignoreCase = true))
+                                it.copy(
+                                    isConnected = it.address.equals(device.address, ignoreCase = true),
+                                    isConnecting = false
+                                )
                             }
                             state.copy(
                                 activeDeviceId = device.address,
@@ -137,7 +159,9 @@ class BduckyViewModel : ViewModel() {
 
                     override fun onDeviceDisconnected(device: BluetoothDevice?) {
                         _uiState.update { state ->
-                            val updatedDevices = state.pairedDevices.map { it.copy(isConnected = false) }
+                            val updatedDevices = state.pairedDevices.map {
+                                it.copy(isConnected = false, isConnecting = false)
+                            }
                             state.copy(
                                 activeDeviceId = null,
                                 targetName = "None",
@@ -307,12 +331,15 @@ class BduckyViewModel : ViewModel() {
             _uiState.update { state ->
                 val name = try { device.name ?: deviceId } catch (_: SecurityException) { deviceId }
                 val updated = state.pairedDevices.map {
-                    it.copy(isConnected = it.address.equals(deviceId, ignoreCase = true))
+                    it.copy(
+                        isConnecting = it.address.equals(deviceId, ignoreCase = true),
+                        isConnected = false
+                    )
                 }
                 state.copy(
                     activeDeviceId = deviceId,
                     targetName = name,
-                    status = "CONNECTED",
+                    status = "CONNECTING...",
                     pairedDevices = updated,
                     executionLogs = (state.executionLogs + "[LINK] Connecting to $name...").takeLast(60)
                 )
@@ -325,7 +352,7 @@ class BduckyViewModel : ViewModel() {
     fun disconnectDevice() {
         hidManager?.disconnect()
         _uiState.update { state ->
-            val updated = state.pairedDevices.map { it.copy(isConnected = false) }
+            val updated = state.pairedDevices.map { it.copy(isConnected = false, isConnecting = false) }
             state.copy(
                 activeDeviceId = null,
                 targetName = "None",
